@@ -1,0 +1,86 @@
+name: napcat-plugin-tmp-bot
+description: 欧洲卡车模拟2 TMP查询机器人 - 适配 Napcat/OneBot11
+version: 1.7.4
+main: src/index.js
+author: BGYdook,晚安（Goodnight_An）
+homepage: https://github.com/BGYdook/napcat-plugin-tmp-bot
+repo: https://github.com/BGYdook/napcat-plugin-tmp-bot
+license: MIT
+
+# 插件功能特性
+features:
+  - 玩家信息查询
+  - 玩家位置信息查询（底图渲染）
+  - 服务器热门地点路况查询
+  - 欧卡/美卡服务器状态查询
+  - 总里程与今日里程排行榜
+  - 地图DLC列表查询（图片输出）
+  - 支持TMPID绑定功能
+
+# 支持的命令列表
+commands:
+  - name: 绑定
+    description: 绑定 TMPID，绑定后可直接使用查询/定位等命令
+    usage: 绑定 123456
+  - name: 解绑
+    description: 解除 TMPID 绑定
+    usage: 解绑
+  - name: 查询
+    description: 查询TMP玩家信息，可指定ID或使用绑定的ID
+    usage: 查询 123456 或 查询（使用绑定ID）
+  - name: 定位
+    description: 查询并渲染玩家位置信息（底图+玩家点）
+    usage: 定位 123456 或 定位（使用绑定ID）
+  - name: 服务器
+    description: 查询欧卡/美卡服务器信息列表
+    usage: 服务器
+  - name: 排行
+    description: 查看里程排行榜（总里程/今日里程）
+    usage: 排行
+  - name: DLC
+    description: 列出地图相关 DLC（支持图片输出）
+    usage: DLC
+  - name: DLC列表
+    description: 列出地图相关 DLC（支持图片输出）
+    usage: DLC列表
+  - name: 地图DLC
+    description: 列出地图相关 DLC（支持图片输出）
+    usage: 地图DLC
+  - name: 帮助
+    description: 查看插件命令帮助
+    usage: 帮助
+
+# 使用说明
+usage: |
+  本插件为欧洲卡车模拟2 TMP查询机器人，提供以下功能：
+  
+  1. 玩家信息查询 - 查询TMP玩家的基本信息和游戏数据
+  2. 位置查询 - 实时查询玩家在游戏中的位置信息
+  3. 服务器状态 - 查询欧卡/美卡各服务器的在线状态
+  4. 路况信息 - 查询热门地点的实时路况信息
+  5. 排行榜 - 查看总里程和今日里程排行榜
+  6. 绑定功能 - 绑定TMPID后可省略在命令中输入ID
+  
+  支持的服务器简称：
+  - Simulation 1 (简称: s1)
+  - Simulation 2 (简称: s2) 
+  - ProMods (简称: p)
+  - Arcade (简称: a)
+
+# 数据来源
+data_source: TMP官方API
+api_docs: https://truckersmp.com/developers/api
+
+keywords:
+  - chatbot
+  - plugin
+  - truckersmp
+  - gametool
+  - ets2
+  - tmp
+  - napcat
+  - koishi
+  - onebot
+  - 欧洲卡车模拟2
+  - 游戏查询
+  - 排行榜

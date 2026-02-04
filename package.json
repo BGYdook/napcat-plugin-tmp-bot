@@ -1,0 +1,42 @@
+{
+  "name": "napcat-plugin-tmp-bot",
+  "description": "欧洲卡车模拟2 TMP查询机器人 - 支持玩家信息查询、位置查询、服务器状态查询、里程排行榜等功能",
+  "version": "1.7.4",
+  "main": "src/index.js",
+  "author": "BGYdook,晚安（Goodnight_An）",
+  "repository": {
+    "url": "https://github.com/BGYdook/napcat-plugin-tmp-bot"
+  },
+  "homepage": "https://github.com/BGYdook/napcat-plugin-tmp-bot",
+  "files": [
+    "src",
+    "lib"
+  ],
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc",
+    "start": "node lib/index.js"
+  },
+  "keywords": [
+    "chatbot",
+    "plugin",
+    "truckersmp",
+    "gametool",
+    "ets2",
+    "tmp",
+    "napcat",
+    "koishi",
+    "onebot"
+  ],
+  "dependencies": {
+    "dayjs": "^1.11.13",
+    "js-md5": "^0.8.3"
+  },
+  "peerDependencies": {
+    "koishi": "^4.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "@types/node": "^18.0.0"
+  }
+}

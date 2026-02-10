@@ -33,7 +33,6 @@
     "typescript": "^5.0.0"
   },
   "scripts": {
-    "build": "tsc && node build.mjs",
-    "dev": "tsc --watch"
+    "build": "node build.mjs"
   }
 }

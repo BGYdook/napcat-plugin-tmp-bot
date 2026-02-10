@@ -16,6 +16,7 @@ function copyRecursiveSync(src, dest) {
 
 try {
   mkdirSync('dist', { recursive: true });
+
   copyRecursiveSync('src/command', 'dist/command');
   copyRecursiveSync('src/api', 'dist/api');
   copyRecursiveSync('src/util', 'dist/util');
@@ -27,7 +28,25 @@ try {
   } catch (err) {
     console.log('Resource directory not found, skipping...');
   }
-  writeFileSync('dist/index.mjs', readFileSync('dist/index.js'));
+
+  copyFileSync('src/index.mjs', 'dist/index.mjs');
+
+  const pkg = JSON.parse(readFileSync('package.json', 'utf8'));
+  const distPkg = {
+    name: pkg.name,
+    plugin: pkg.plugin,
+    version: pkg.version,
+    type: pkg.type,
+    main: pkg.main,
+    description: pkg.description,
+    author: pkg.author,
+    license: pkg.license,
+    keywords: pkg.keywords,
+    napcat: pkg.napcat,
+    dependencies: pkg.dependencies
+  };
+  writeFileSync('dist/package.json', JSON.stringify(distPkg, null, 2));
+
   console.log('Build complete!');
 } catch (err) {
   console.error('Build failed:', err);

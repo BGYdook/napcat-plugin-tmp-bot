@@ -1,9 +1,9 @@
 module.exports = {
-  async get(db, platform, userId) {
-    return await db.get(platform, userId);
+  async get(ctx, platform, userId) {
+    return await ctx.database.get(platform, userId);
   },
 
-  saveOrUpdate(db, platform, userId, tmpId) {
-    db.set(platform, userId, tmpId);
+  saveOrUpdate(ctx, platform, userId, tmpId) {
+    ctx.database.set(platform, userId, tmpId);
   }
 }

@@ -1,10 +1,10 @@
 module.exports = {
-  async getTranslate(db, contentMd5) {
-    const cacheData = await db.getCache();
+  async getTranslate(ctx, contentMd5) {
+    const cacheData = await ctx.database.getCache();
     return cacheData[contentMd5]?.translate_content || null;
   },
 
-  save(db, contentMd5, content, translateContent) {
-    db.setCache({ [contentMd5]: { content, content_md5: contentMd5, translate_content: translateContent } });
+  save(ctx, contentMd5, content, translateContent) {
+    ctx.database.setCache({ [contentMd5]: { content, content_md5: contentMd5, translate_content: translateContent } });
   }
 }

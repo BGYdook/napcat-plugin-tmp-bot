@@ -41,34 +41,32 @@
 
 ### 前置要求
 
-- Node.js 16+
-- NapCat 或兼容 OneBot11 的框架
+- Node.js 18+
+- NapCat 4.14.0+
 
 ### 安装
 
+将插件文件夹放到 NapCat 的 `plugins` 目录下,或通过 NapCat WebUI 安装。
+
+### 构建
+
 ```bash
-npm install napcat-plugin-tmp-bot
+npm install
+npm run build
 ```
 
 ## 配置说明
 
-复制 `config/config.json.example` 为 `config/config.json` 并根据需要修改配置:
+通过 NapCat WebUI 配置面板修改插件设置:
 
-```json
-{
-  "queryShowAvatarEnable": true,        // 查询时显示头像
-  "baiduTranslateEnable": true,         // 启用百度翻译(默认开启)
-  "baiduTranslateAppId": "",           // 百度翻译 App ID(需申请)
-  "baiduTranslateKey": "",              // 百度翻译密钥(需申请)
-  "baiduTranslateCacheEnable": false,   // 启用翻译缓存
-  "apiTimeoutSeconds": 10,              // API 超时时间(秒)
-  "preferVtcmMileage": true,            // 优先使用 VTCM 里程数据
-  "enableBindFeature": true,            // 启用绑定功能
-  "dlcListImage": false,                // DLC 列表使用图片输出
-  "tmpQueryType": 1,                    // 查询类型(1=文字)
-  "tmpTrafficType": 1                   // 路况查询类型(1=文字)
-}
-```
+- 查询时显示头像 - 查询玩家信息时是否显示头像
+- 启用百度翻译 - 是否使用百度翻译 API
+- 百度翻译 App ID - 百度翻译开放平台申请的 App ID
+- 百度翻译密钥 - 百度翻译开放平台申请的密钥
+- 启用翻译缓存 - 是否缓存翻译结果以减少 API 调用
+- API 超时时间 - 外部 API 请求的超时时间(秒)
+- 优先使用 VTCM 里程 - 查询里程时优先使用 VTCM 数据源
+- 启用绑定功能 - 是否允许用户绑定 TMP ID
 
 ## 地名翻译
 
@@ -82,21 +80,12 @@ npm install napcat-plugin-tmp-bot
    - 每月 200 万字符免费额度
    - 用于翻译内置表未覆盖的内容
    - 需访问 [百度翻译开放平台](https://fanyi-api.baidu.com/) 申请
-   - 默认已启用,如不需要可设置 `baiduTranslateEnable: false`
-
-## 插件加载
-
-将插件放到 NapCat 的 plugins 目录下,或在 NapCat 配置中启用该插件。
-
-插件会自动创建以下目录:
-- `config/` - 配置文件目录
-- `data/` - 数据存储目录(绑定信息、翻译缓存)
+   - 默认已启用,如不需要可关闭
 
 ## 依赖项
 
 - dayjs ^1.11.13
 - js-md5 ^0.8.3
-- node-fetch ^2.7.0
 
 ## 数据来源
 

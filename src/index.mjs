@@ -9,115 +9,6 @@ let config = {};
 const BIND_FILE_NAME = 'bind.json';
 const TRANSLATE_CACHE_FILE_NAME = 'translate_cache.json';
 
-export const plugin_init = async (ctx) => {
-  ctx.logger.log('【TMP查询机器人】插件加载中...');
-
-  await initDataDir(ctx);
-  await loadConfig(ctx);
-
-  ctx.logger.log('【TMP查询机器人】插件加载完成');
-};
-
-export const plugin_onmessage = async (ctx, event) => {
-  if (event.post_type !== 'message') return;
-
-  const message = event.raw_message || event.message;
-  const parsed = parseCommand(message);
-  if (!parsed) return;
-
-  const { cmd, args } = parsed;
-
-  let result = '';
-
-  try {
-    switch (cmd) {
-      case '绑定':
-        if (config.enableBindFeature !== false) {
-          const tmpId = extractArg(args, 'number');
-          const session = createSession(ctx, event);
-          result = await handleBind(ctx, config, session, tmpId);
-        } else {
-          result = '绑定功能已禁用';
-        }
-        break;
-
-      case '解绑':
-        if (config.enableBindFeature !== false) {
-          const session = createSession(ctx, event);
-          const bindFilePath = path.join(ctx.dataPath, BIND_FILE_NAME);
-          const bindData = JSON.parse(await fs.readFile(bindFilePath, 'utf8'));
-          const key = `${session.platform}:${session.userId}`;
-          delete bindData[key];
-          await fs.writeFile(bindFilePath, JSON.stringify(bindData, null, 2));
-          result = '解绑成功';
-        } else {
-          result = '绑定功能已禁用';
-        }
-        break;
-
-      case '查询':
-        const queryId = extractArg(args, 'number');
-        const session = createSession(ctx, event);
-        result = await handleQuery(ctx, config, session, queryId);
-        break;
-
-      case '定位':
-        const posId = extractArg(args, 'number');
-        const session2 = createSession(ctx, event);
-        result = await handlePosition(ctx, config, session2, posId);
-        break;
-
-      case '路况':
-        const serverName = extractArg(args, 'string');
-        result = await handleTraffic(ctx, config, serverName);
-        break;
-
-      case '服务器':
-        result = await handleServer(ctx);
-        break;
-
-      case '插件版本':
-        result = await handleVersion(ctx);
-        break;
-
-      case 'DLC列表':
-      case '地图DLC':
-        const session3 = createSession(ctx, event);
-        result = await handleDlcMap(ctx, session3);
-        break;
-
-      case '总里程排行':
-        const session4 = createSession(ctx, event);
-        result = await handleMileageRanking(ctx, session4, 'total');
-        break;
-
-      case '今日里程排行':
-        const session5 = createSession(ctx, event);
-        result = await handleMileageRanking(ctx, session5, 'today');
-        break;
-
-      case '帮助':
-        result = getHelpMessage();
-        break;
-
-      default:
-        return;
-    }
-
-    if (result) {
-      await sendReply(ctx, event, result);
-    }
-  } catch (err) {
-    ctx.logger.error('处理命令失败:', err);
-    const errorMsg = '命令执行失败: ' + (err?.message || '未知错误');
-    await sendReply(ctx, event, errorMsg);
-  }
-};
-
-export const plugin_cleanup = (ctx) => {
-  ctx.logger.log('【TMP查询机器人】插件已卸载');
-};
-
 async function initDataDir(ctx) {
   try {
     await fs.mkdir(ctx.dataPath, { recursive: true });
@@ -259,7 +150,6 @@ async function handleQuery(ctx, cfg, session, tmpId) {
   }
 
   const dayjs = await import('dayjs');
-  const md5 = await import('js-md5');
   const playerInfo = result.data;
 
   let message = '';
@@ -469,6 +359,115 @@ function getHelpMessage() {
 /帮助 - 显示此帮助信息`;
 }
 
+const plugin_init = async (ctx) => {
+  ctx.logger.log('【TMP查询机器人】插件加载中...');
+
+  await initDataDir(ctx);
+  await loadConfig(ctx);
+
+  ctx.logger.log('【TMP查询机器人】插件加载完成');
+};
+
+const plugin_onmessage = async (ctx, event) => {
+  if (event.post_type !== 'message') return;
+
+  const message = event.raw_message || event.message;
+  const parsed = parseCommand(message);
+  if (!parsed) return;
+
+  const { cmd, args } = parsed;
+
+  let result = '';
+
+  try {
+    switch (cmd) {
+      case '绑定':
+        if (config.enableBindFeature !== false) {
+          const tmpId = extractArg(args, 'number');
+          const session = createSession(ctx, event);
+          result = await handleBind(ctx, config, session, tmpId);
+        } else {
+          result = '绑定功能已禁用';
+        }
+        break;
+
+      case '解绑':
+        if (config.enableBindFeature !== false) {
+          const session = createSession(ctx, event);
+          const bindFilePath = path.join(ctx.dataPath, BIND_FILE_NAME);
+          const bindData = JSON.parse(await fs.readFile(bindFilePath, 'utf8'));
+          const key = `${session.platform}:${session.userId}`;
+          delete bindData[key];
+          await fs.writeFile(bindFilePath, JSON.stringify(bindData, null, 2));
+          result = '解绑成功';
+        } else {
+          result = '绑定功能已禁用';
+        }
+        break;
+
+      case '查询':
+        const queryId = extractArg(args, 'number');
+        const session = createSession(ctx, event);
+        result = await handleQuery(ctx, config, session, queryId);
+        break;
+
+      case '定位':
+        const posId = extractArg(args, 'number');
+        const session2 = createSession(ctx, event);
+        result = await handlePosition(ctx, config, session2, posId);
+        break;
+
+      case '路况':
+        const serverName = extractArg(args, 'string');
+        result = await handleTraffic(ctx, config, serverName);
+        break;
+
+      case '服务器':
+        result = await handleServer(ctx);
+        break;
+
+      case '插件版本':
+        result = await handleVersion(ctx);
+        break;
+
+      case 'DLC列表':
+      case '地图DLC':
+        const session3 = createSession(ctx, event);
+        result = await handleDlcMap(ctx, session3);
+        break;
+
+      case '总里程排行':
+        const session4 = createSession(ctx, event);
+        result = await handleMileageRanking(ctx, session4, 'total');
+        break;
+
+      case '今日里程排行':
+        const session5 = createSession(ctx, event);
+        result = await handleMileageRanking(ctx, session5, 'today');
+        break;
+
+      case '帮助':
+        result = getHelpMessage();
+        break;
+
+      default:
+        return;
+    }
+
+    if (result) {
+      await sendReply(ctx, event, result);
+    }
+  } catch (err) {
+    ctx.logger.error('处理命令失败:', err);
+    const errorMsg = '命令执行失败: ' + (err?.message || '未知错误');
+    await sendReply(ctx, event, errorMsg);
+  }
+};
+
+const plugin_cleanup = (ctx) => {
+  ctx.logger.log('【TMP查询机器人】插件已卸载');
+};
+
 export const plugin_config_ui = [
   {
     key: 'queryShowAvatarEnable',
@@ -549,3 +548,5 @@ export const plugin_config_ui = [
     ]
   }
 ];
+
+export { plugin_init, plugin_onmessage, plugin_cleanup };

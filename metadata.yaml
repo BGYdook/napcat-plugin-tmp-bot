@@ -1,7 +1,7 @@
 name: napcat-plugin-tmp-bot
 description: 欧洲卡车模拟2 TMP查询机器人 - 适配 Napcat/OneBot11
 version: 1.7.4
-main: src/index.js
+main: src/index.ts
 author: BGYdook,晚安（Goodnight_An）
 homepage: https://github.com/BGYdook/napcat-plugin-tmp-bot
 repo: https://github.com/BGYdook/napcat-plugin-tmp-bot

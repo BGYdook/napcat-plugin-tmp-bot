@@ -10,7 +10,6 @@
     "skipLibCheck": true,
     "esModuleInterop": true,
     "moduleResolution": "node",
-    "allowJs": true,
     "strict": true,
     "forceConsistentCasingInFileNames": true,
     "types": [
@@ -18,7 +17,7 @@
     ]
   },
   "include": [
-    "src"
+    "src/**/*.ts"
   ],
   "exclude": [
     "src/resource"

@@ -3,21 +3,16 @@ using NapCatTmpBot.Services;
 
 namespace NapCatTmpBot.Commands;
 
-/// <summary>
-/// 定位命令
-/// </summary>
 public static class PositionCommand
 {
-    /// <summary>
-    /// 执行定位命令
-    /// </summary>
     public static async Task<string> Execute(
         CommandContext context,
         PluginConfig config,
         TmpApiService tmpApi,
         BaiduTranslateService translateService,
         BindService bindService,
-        ImageRenderService imageRenderService)
+        MapTileService tileService,
+        MapCoordinateService coordService)
     {
         long? tmpId = null;
 
@@ -40,6 +35,14 @@ public static class PositionCommand
             return "请输入正确的玩家编号";
         }
 
+        var playerResult = await tmpApi.PlayerInfoAsync(tmpId.Value);
+        if (playerResult.Code != 200 || playerResult.Data == null)
+        {
+            return "查询玩家信息失败，请重试";
+        }
+
+        var player = playerResult.Data;
+
         var mapResult = await tmpApi.PlayerMapInfoAsync(tmpId.Value);
         if (mapResult.Code != 200 || mapResult.Data == null)
         {
@@ -50,10 +53,9 @@ public static class PositionCommand
 
         if (!mapInfo.Online)
         {
-            var playerResult = await tmpApi.PlayerInfoAsync(tmpId.Value);
-            if (playerResult.Code == 200 && playerResult.Data?.LastOnlineTime.HasValue == true)
+            if (player.LastOnlineTime.HasValue)
             {
-                var lastOnline = DateTimeOffset.FromUnixTimeSeconds(playerResult.Data.LastOnlineTime.Value).DateTime;
+                var lastOnline = DateTimeOffset.FromUnixTimeSeconds(player.LastOnlineTime.Value).DateTime;
                 var timeDiff = DateTime.UtcNow - lastOnline;
                 return $"玩家当前离线\n上次在线: {FormatTimeDiff(timeDiff)}";
             }
@@ -61,7 +63,8 @@ public static class PositionCommand
         }
 
         var message = new System.Text.StringBuilder();
-        message.AppendLine($"🆔TMP编号: {tmpId.Value}");
+        message.AppendLine($"🆔TMP编号: {player.TmpId}");
+        message.AppendLine($"😀玩家名称: {player.Name}");
         message.AppendLine($"📶在线状态: 在线🟢");
 
         if (mapInfo.ServerDetails != null)
@@ -69,23 +72,44 @@ public static class PositionCommand
             message.AppendLine($"🖥️所在服务器: {mapInfo.ServerDetails.Name}");
         }
 
+        string country = "", city = "";
         if (mapInfo.Location?.Poi != null)
         {
-            var country = await translateService.TranslateAsync(mapInfo.Location.Poi.Country);
-            var city = await translateService.TranslateAsync(mapInfo.Location.Poi.RealName);
+            country = await translateService.TranslateAsync(mapInfo.Location.Poi.Country);
+            city = await translateService.TranslateAsync(mapInfo.Location.Poi.RealName);
             message.AppendLine($"🌍当前位置: {country} - {city}");
         }
 
         try
         {
-            var players = new List<(string, double, double)>();
-            var imageData = imageRenderService.GenerateMapImage($"定位 - {mapInfo.ServerDetails?.Name ?? "未知"}", players);
-            var imagePath = imageRenderService.SaveToTempFile(imageData, "position_");
-            message.AppendLine($"\n[CQ:image,file=file:///{imagePath.Replace("\\", "/")}]");
+            var mapType = MapType.Ets;
+            if (mapInfo.ServerId.HasValue && coordService.IsProModsServer(mapInfo.ServerId.Value))
+            {
+                mapType = MapType.ProMods;
+            }
+
+            var players = new List<(string name, double x, double y, bool isCurrent)>
+            {
+                (player.Name, mapInfo.X, mapInfo.Y, true)
+            };
+
+            var imageData = await tileService.GenerateMapImageAsync(mapType, mapInfo.X, mapInfo.Y, players);
+            if (imageData != null)
+            {
+                var imagePath = Path.Combine(Path.GetTempPath(), "NapCatTmpBot", $"position_{Guid.NewGuid():N}.png");
+                if (!Directory.Exists(Path.GetDirectoryName(imagePath)))
+                    Directory.CreateDirectory(Path.GetDirectoryName(imagePath)!);
+                File.WriteAllBytes(imagePath, imageData);
+                message.AppendLine($"\n[CQ:image,file=file:///{imagePath.Replace("\\", "/")}]");
+            }
+            else
+            {
+                message.AppendLine("\n📍 地图图片生成失败");
+            }
         }
-        catch
+        catch (Exception ex)
         {
-            message.AppendLine("\n📍 地图图片生成失败");
+            message.AppendLine($"\n📍 地图生成异常: {ex.Message}");
         }
 
         return message.ToString();

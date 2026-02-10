@@ -10,7 +10,8 @@ public class TmpApiService
 {
     private const string BaseApi = "https://api.truckersmp.com/v2";
     private const string EvmApi = "https://da.vtcm.link";
-    private const string TruckyApi = "https://api.truckyapp.com/v2";
+    private const string TruckyApiBase = "https://api.truckyapp.com";
+    private const string TruckyApiProxy = "https://api.codetabs.com/v1/proxy/?quest=https://api.truckyapp.com";
     private readonly HttpClient _http;
 
     public TmpApiService(HttpClient http)
@@ -31,7 +32,6 @@ public class TmpApiService
             
             if (result?.Code == 200 && result.Data != null)
             {
-                // 补充头像 URL
                 result.Data.AvatarUrl = $"https://static.truckersmp.com/avatars/{tmpId}.png";
                 return new ApiResponse<TmpPlayerInfo> { Code = 200, Data = result.Data };
             }
@@ -45,17 +45,25 @@ public class TmpApiService
     }
 
     /// <summary>
-    /// 查询玩家在线信息
+    /// 查询玩家在线信息（Trucky API）
     /// </summary>
     public async Task<ApiResponse<PlayerMapInfo>> PlayerMapInfoAsync(long tmpId)
     {
         try
         {
-            var response = await _http.GetAsync($"{TruckyApi}/trucksmp/players/{tmpId}");
+            var url = $"{TruckyApiProxy}/v3/map/online?playerID={tmpId}";
+            var response = await _http.GetAsync(url);
             var content = await response.Content.ReadAsStringAsync();
-            var result = JsonConvert.DeserializeObject<ApiResponse<PlayerMapInfo>>(content);
             
-            return result ?? new ApiResponse<PlayerMapInfo> { Code = 500, Message = "查询失败" };
+            // Trucky API 直接返回数据，不是 ApiResponse 格式
+            var result = JsonConvert.DeserializeObject<PlayerMapInfo>(content);
+            
+            if (result != null && !string.IsNullOrEmpty(result.Error))
+            {
+                return new ApiResponse<PlayerMapInfo> { Code = 500, Message = result.Error };
+            }
+            
+            return new ApiResponse<PlayerMapInfo> { Code = 200, Data = result };
         }
         catch
         {
@@ -85,20 +93,20 @@ public class TmpApiService
     /// <summary>
     /// 查询地图玩家列表
     /// </summary>
-    public async Task<ApiResponse<List<TmpPlayerInfo>>> MapPlayerListAsync(int serverId, double ax, double ay, double bx, double by)
+    public async Task<ApiResponse<List<MapPlayer>>> MapPlayerListAsync(int serverId, double ax, double ay, double bx, double by)
     {
         try
         {
             var url = $"{EvmApi}/map/playerList?aAxisX={ax}&aAxisY={ay}&bAxisX={bx}&bAxisY={by}&serverId={serverId}";
             var response = await _http.GetAsync(url);
             var content = await response.Content.ReadAsStringAsync();
-            var result = JsonConvert.DeserializeObject<ApiResponse<List<TmpPlayerInfo>>>(content);
+            var result = JsonConvert.DeserializeObject<ApiResponse<List<MapPlayer>>>(content);
             
-            return result ?? new ApiResponse<List<TmpPlayerInfo>> { Code = 500, Message = "查询失败" };
+            return result ?? new ApiResponse<List<MapPlayer>> { Code = 500, Message = "查询失败" };
         }
         catch
         {
-            return new ApiResponse<List<TmpPlayerInfo>> { Code = 500, Message = "查询失败" };
+            return new ApiResponse<List<MapPlayer>> { Code = 500, Message = "查询失败" };
         }
     }
 

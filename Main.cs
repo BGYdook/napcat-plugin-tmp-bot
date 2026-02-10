@@ -5,9 +5,6 @@ using System.Reflection;
 
 namespace NapCatTmpBot;
 
-/// <summary>
-/// NapCat TMP Bot 插件主类
-/// </summary>
 public class Main
 {
     private readonly PluginConfig _config;
@@ -16,6 +13,8 @@ public class Main
     private readonly TmpApiService _tmpApi;
     private readonly BaiduTranslateService _translateService;
     private readonly ImageRenderService _imageRenderService;
+    private readonly MapTileService _mapTileService;
+    private readonly MapCoordinateService _coordService;
     private readonly Dictionary<string, Func<CommandContext, Task<string>>> _commands;
 
     public Main(PluginConfig config)
@@ -26,6 +25,8 @@ public class Main
         _tmpApi = new TmpApiService(_httpClient);
         _translateService = new BaiduTranslateService(_httpClient, _config);
         _imageRenderService = new ImageRenderService();
+        _coordService = new MapCoordinateService();
+        _mapTileService = new MapTileService(_httpClient, _coordService);
 
         _commands = new Dictionary<string, Func<CommandContext, Task<string>>>(StringComparer.OrdinalIgnoreCase)
         {
@@ -48,9 +49,6 @@ public class Main
         };
     }
 
-    /// <summary>
-    /// 处理消息
-    /// </summary>
     public async Task<string?> HandleMessageAsync(CommandContext context)
     {
         var content = context.Message.Trim();
@@ -97,7 +95,7 @@ public class Main
 
     private async Task<string> HandlePosition(CommandContext context)
     {
-        return await PositionCommand.Execute(context, _config, _tmpApi, _translateService, _bindService, _imageRenderService);
+        return await PositionCommand.Execute(context, _config, _tmpApi, _translateService, _bindService, _mapTileService, _coordService);
     }
 
     private async Task<string> HandleTraffic(CommandContext context)
@@ -138,17 +136,11 @@ public class Main
 
     #endregion
 
-    /// <summary>
-    /// 获取插件版本信息
-    /// </summary>
     public static string GetVersion()
     {
         return Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "1.7.4";
     }
 
-    /// <summary>
-    /// 清理资源
-    /// </summary>
     public void Dispose()
     {
         _httpClient?.Dispose();

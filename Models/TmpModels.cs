@@ -1,8 +1,5 @@
 namespace NapCatTmpBot.Models;
 
-/// <summary>
-/// TMP 玩家信息
-/// </summary>
 public class TmpPlayerInfo
 {
     public long TmpId { get; set; }
@@ -29,44 +26,34 @@ public class TmpPlayerInfo
     public string AvatarUrl { get; set; } = string.Empty;
 }
 
-/// <summary>
-/// 玩家地图信息
-/// </summary>
 public class PlayerMapInfo
 {
     public bool Online { get; set; }
+    public int? ServerId { get; set; }
     public ServerDetails? ServerDetails { get; set; }
     public Location? Location { get; set; }
+    public double X { get; set; }
+    public double Y { get; set; }
+    public string? Error { get; set; }
 }
 
-/// <summary>
-/// 服务器详细信息
-/// </summary>
 public class ServerDetails
 {
     public string Name { get; set; } = string.Empty;
+    public int Id { get; set; }
 }
 
-/// <summary>
-/// 位置信息
-/// </summary>
 public class Location
 {
     public Poi? Poi { get; set; }
 }
 
-/// <summary>
-/// POI 信息
-/// </summary>
 public class Poi
 {
     public string Country { get; set; } = string.Empty;
     public string RealName { get; set; } = string.Empty;
 }
 
-/// <summary>
-/// 服务器信息
-/// </summary>
 public class ServerInfo
 {
     public int Id { get; set; }
@@ -78,9 +65,6 @@ public class ServerInfo
     public string ShortName { get; set; } = string.Empty;
 }
 
-/// <summary>
-/// DLC 信息
-/// </summary>
 public class DlcInfo
 {
     public string Name { get; set; } = string.Empty;
@@ -88,9 +72,6 @@ public class DlcInfo
     public string Image { get; set; } = string.Empty;
 }
 
-/// <summary>
-/// 里程排行项
-/// </summary>
 public class MileageRankingItem
 {
     public long TmpId { get; set; }
@@ -99,9 +80,14 @@ public class MileageRankingItem
     public int Rank { get; set; }
 }
 
-/// <summary>
-/// API 响应基类
-/// </summary>
+public class MapPlayer
+{
+    public long TmpId { get; set; }
+    public double AxisX { get; set; }
+    public double AxisY { get; set; }
+    public bool IsCurrentPlayer { get; set; }
+}
+
 public class ApiResponse<T>
 {
     public int Code { get; set; }

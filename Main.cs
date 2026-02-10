@@ -36,12 +36,15 @@ public class Main
             ["定位"] = HandlePosition,
             ["路况"] = HandleTraffic,
             ["服务器"] = HandleServer,
+            ["足迹"] = HandleTrack,
             ["插件版本"] = HandleVersion,
             ["DLC列表"] = HandleDlc,
             ["地图DLC"] = HandleDlc,
             ["总里程排行"] = HandleMileageRanking,
             ["今日里程排行"] = HandleMileageRanking,
-            ["排行"] = HandleMileageRanking
+            ["排行"] = HandleMileageRanking,
+            ["帮助"] = HandleHelp,
+            ["菜单"] = HandleHelp
         };
     }
 
@@ -52,7 +55,6 @@ public class Main
     {
         var content = context.Message.Trim();
 
-        // 解析命令
         foreach (var cmd in _commands.Keys.OrderByDescending(x => x.Length))
         {
             if (content.StartsWith(cmd, StringComparison.OrdinalIgnoreCase))
@@ -76,7 +78,6 @@ public class Main
         {
             return "绑定功能已禁用";
         }
-
         return await BindCommand.Execute(context, _bindService);
     }
 
@@ -86,7 +87,6 @@ public class Main
         {
             return "绑定功能已禁用";
         }
-
         return await BindCommand.Unbind(context, _bindService);
     }
 
@@ -110,6 +110,11 @@ public class Main
         return await ServerCommand.Execute(context, _tmpApi);
     }
 
+    private async Task<string> HandleTrack(CommandContext context)
+    {
+        return await TrackCommand.Execute(context, _config, _tmpApi, _bindService, _imageRenderService);
+    }
+
     private async Task<string> HandleVersion(CommandContext context)
     {
         return await VersionCommand.Execute(context, _tmpApi);
@@ -124,6 +129,11 @@ public class Main
     {
         var type = context.CommandName == "今日里程排行" ? "today" : "total";
         return await MileageRankingCommand.Execute(context, _config, _tmpApi, _translateService, type);
+    }
+
+    private async Task<string> HandleHelp(CommandContext context)
+    {
+        return await HelpCommand.Execute(context);
     }
 
     #endregion

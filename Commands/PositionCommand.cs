@@ -21,14 +21,12 @@ public static class PositionCommand
     {
         long? tmpId = null;
 
-        // 解析参数
         if (!string.IsNullOrWhiteSpace(context.Args) && long.TryParse(context.Args, out var parsedId))
         {
             tmpId = parsedId;
         }
         else
         {
-            // 尝试从绑定获取
             var bind = bindService.GetBind(context.Platform, context.UserId);
             if (bind == null)
             {
@@ -42,7 +40,6 @@ public static class PositionCommand
             return "请输入正确的玩家编号";
         }
 
-        // 查询在线信息
         var mapResult = await tmpApi.PlayerMapInfoAsync(tmpId.Value);
         if (mapResult.Code != 200 || mapResult.Data == null)
         {
@@ -53,7 +50,6 @@ public static class PositionCommand
 
         if (!mapInfo.Online)
         {
-            // 查询玩家基本信息获取最后在线时间
             var playerResult = await tmpApi.PlayerInfoAsync(tmpId.Value);
             if (playerResult.Code == 200 && playerResult.Data?.LastOnlineTime.HasValue == true)
             {
@@ -80,11 +76,10 @@ public static class PositionCommand
             message.AppendLine($"🌍当前位置: {country} - {city}");
         }
 
-        // 生成地图图片
         try
         {
-            // TODO: 实现真实的坐标获取和转换
-            var imageData = imageRenderService.GenerateMapImage($"玩家定位 - {mapInfo.ServerDetails?.Name ?? "未知"}", []);
+            var players = new List<(string, double, double)>();
+            var imageData = imageRenderService.GenerateMapImage($"定位 - {mapInfo.ServerDetails?.Name ?? "未知"}", players);
             var imagePath = imageRenderService.SaveToTempFile(imageData, "position_");
             message.AppendLine($"\n[CQ:image,file=file:///{imagePath.Replace("\\", "/")}]");
         }
@@ -96,9 +91,6 @@ public static class PositionCommand
         return message.ToString();
     }
 
-    /// <summary>
-    /// 格式化时间差
-    /// </summary>
     private static string FormatTimeDiff(TimeSpan diff)
     {
         if (diff.TotalDays >= 1)

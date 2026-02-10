@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <Version>1.7.4</Version>
+    <Authors>BGYdook, Goodnight_An</Authors>
+    <Description>欧洲卡车模拟2 TMP查询机器人 - NapCat原生插件</Description>
+    <Product>NapCatTmpBot</Product>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="SkiaSharp" Version="2.88.8" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="2.88.8" />
+    <PackageReference Include="SkiaSharp.QrCode" Version="0.5.0" />
+  </ItemGroup>
+</Project>

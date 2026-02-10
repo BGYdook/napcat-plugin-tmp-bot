@@ -1,58 +1,49 @@
-const { resolve } = require('path')
-const common = require('../util/common')
-const evmOpenApi = require('../api/evmOpenApi')
-const guildBind = require('../database/guildBind')
+const evmOpenApi = require('../api/evmOpenApi');
+const guildBind = require('../database/guildBind');
 
 module.exports = async (ctx, session, rankingType) => {
-  if (!ctx.puppeteer) {
-    return '未启用 Puppeteer 功能'
-  }
-
-  // 查询排行榜信息
-  let mileageRankingList = await evmOpenApi.mileageRankingList(ctx.http, rankingType, null)
+  let mileageRankingList = await evmOpenApi.mileageRankingList(ctx.http, rankingType, null);
   if (mileageRankingList.error) {
-    return '查询排行榜信息失败'
+    return '查询排行榜信息失败';
   } else if (mileageRankingList.data.length === 0) {
-    return '暂无数据'
+    return '暂无数据';
   }
 
-  // 查询当前玩家的排行信息
-  let guildBindData = await guildBind.get(ctx.database, session.platform, session.userId)
+  let guildBindData = await guildBind.get(ctx.database, session.platform, session.userId);
   let playerMileageRanking = null;
   if (guildBindData) {
-    let playerMileageRankingResult = await evmOpenApi.mileageRankingList(ctx.http, rankingType, guildBindData.tmp_id)
+    let playerMileageRankingResult = await evmOpenApi.mileageRankingList(ctx.http, rankingType, guildBindData.tmp_id);
     if (!playerMileageRankingResult.error && playerMileageRankingResult.data.length > 0) {
-      playerMileageRanking = playerMileageRankingResult.data[0]
+      playerMileageRanking = playerMileageRankingResult.data[0];
     }
   }
 
-  // 拼接页面数据
-  let data = {
-    rankingType: rankingType,
-    mileageRankingList: mileageRankingList.data,
-    playerMileageRanking: playerMileageRanking
+  let title = rankingType === 'total' ? '【总里程排行榜】' : '【今日里程排行榜】';
+  let message = title + '\n\n';
+
+  for (let i = 0; i < Math.min(10, mileageRankingList.data.length); i++) {
+    const player = mileageRankingList.data[i];
+    message += `#${i + 1} ${player.name}\n`;
+    let mileage = rankingType === 'total' ? player.mileage : player.todayMileage;
+    let unit = '米';
+    if (mileage > 1000) {
+      mileage = (mileage / 1000).toFixed(1);
+      unit = '公里';
+    }
+    message += `里程: ${mileage}${unit}\n`;
   }
 
-  let page
-  try {
-    page = await ctx.puppeteer.page()
-    await page.setViewport({ width: 1000, height: 1000 })
-    await page.goto(`file:///${resolve(__dirname, '../resource/mileage-leaderboard.html')}`)
-    await page.evaluate(`setData(${JSON.stringify(data)})`)
-    await page.waitForNetworkIdle()
-    await common.sleep(500)
-    const element = await page.$("#container");
-    const imageBuffer = await element.screenshot({
-      encoding: 'binary'
-    })
-    const base64 = Buffer.from(imageBuffer).toString('base64')
-    return `[CQ:image,file=base64://${base64}]`
-  } catch (e) {
-    console.info(e)
-    return '渲染异常，请重试'
-  } finally {
-    if (page) {
-      await page.close()
+  if (playerMileageRanking) {
+    message += '\n【我的排名】\n';
+    message += `排名: #${playerMileageRanking.rank || 'N/A'}\n`;
+    let mileage = rankingType === 'total' ? playerMileageRanking.mileage : playerMileageRanking.todayMileage;
+    let unit = '米';
+    if (mileage > 1000) {
+      mileage = (mileage / 1000).toFixed(1);
+      unit = '公里';
     }
+    message += `里程: ${mileage}${unit}`;
   }
+
+  return message;
 }

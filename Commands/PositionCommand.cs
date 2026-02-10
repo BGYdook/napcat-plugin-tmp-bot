@@ -9,7 +9,8 @@ public static class PositionCommand
         CommandContext context,
         PluginConfig config,
         TmpApiService tmpApi,
-        BaiduTranslateService translateService,
+        LocationTranslationService locationTranslate,
+        BaiduTranslateService baiduTranslate,
         BindService bindService,
         MapTileService tileService,
         MapCoordinateService coordService)
@@ -75,8 +76,15 @@ public static class PositionCommand
         string country = "", city = "";
         if (mapInfo.Location?.Poi != null)
         {
-            country = await translateService.TranslateAsync(mapInfo.Location.Poi.Country);
-            city = await translateService.TranslateAsync(mapInfo.Location.Poi.RealName);
+            country = locationTranslate.Translate(mapInfo.Location.Poi.Country);
+            city = locationTranslate.Translate(mapInfo.Location.Poi.RealName);
+            
+            if (config.BaiduTranslateEnable)
+            {
+                country = await baiduTranslate.TranslateAsync(country);
+                city = await baiduTranslate.TranslateAsync(city);
+            }
+            
             message.AppendLine($"🌍当前位置: {country} - {city}");
         }
 

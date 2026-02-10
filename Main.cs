@@ -11,7 +11,8 @@ public class Main
     private readonly HttpClient _httpClient;
     private readonly BindService _bindService;
     private readonly TmpApiService _tmpApi;
-    private readonly BaiduTranslateService _translateService;
+    private readonly LocationTranslationService _locationTranslate;
+    private readonly BaiduTranslateService _baiduTranslate;
     private readonly ImageRenderService _imageRenderService;
     private readonly MapTileService _mapTileService;
     private readonly MapCoordinateService _coordService;
@@ -23,7 +24,8 @@ public class Main
         _httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(_config.ApiTimeoutSeconds) };
         _bindService = new BindService();
         _tmpApi = new TmpApiService(_httpClient);
-        _translateService = new BaiduTranslateService(_httpClient, _config);
+        _locationTranslate = new LocationTranslationService();
+        _baiduTranslate = new BaiduTranslateService(_httpClient, _config);
         _imageRenderService = new ImageRenderService();
         _coordService = new MapCoordinateService();
         _mapTileService = new MapTileService(_httpClient, _coordService);
@@ -90,17 +92,17 @@ public class Main
 
     private async Task<string> HandleQuery(CommandContext context)
     {
-        return await QueryCommand.Execute(context, _config, _tmpApi, _translateService, _bindService);
+        return await QueryCommand.Execute(context, _config, _tmpApi, _locationTranslate, _baiduTranslate, _bindService);
     }
 
     private async Task<string> HandlePosition(CommandContext context)
     {
-        return await PositionCommand.Execute(context, _config, _tmpApi, _translateService, _bindService, _mapTileService, _coordService);
+        return await PositionCommand.Execute(context, _config, _tmpApi, _locationTranslate, _baiduTranslate, _bindService, _mapTileService, _coordService);
     }
 
     private async Task<string> HandleTraffic(CommandContext context)
     {
-        return await TrafficCommand.Execute(context, _config, _tmpApi, _translateService, _imageRenderService);
+        return await TrafficCommand.Execute(context, _config, _tmpApi, _locationTranslate, _baiduTranslate, _imageRenderService);
     }
 
     private async Task<string> HandleServer(CommandContext context)
@@ -126,7 +128,7 @@ public class Main
     private async Task<string> HandleMileageRanking(CommandContext context)
     {
         var type = context.CommandName == "今日里程排行" ? "today" : "total";
-        return await MileageRankingCommand.Execute(context, _config, _tmpApi, _translateService, type);
+        return await MileageRankingCommand.Execute(context, _config, _tmpApi, _locationTranslate, _baiduTranslate, type);
     }
 
     private async Task<string> HandleHelp(CommandContext context)

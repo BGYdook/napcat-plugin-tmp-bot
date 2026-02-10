@@ -1,6 +1,6 @@
 {
   "QueryShowAvatarEnable": true,
-  "BaiduTranslateEnable": false,
+  "BaiduTranslateEnable": true,
   "BaiduTranslateAppId": "",
   "BaiduTranslateKey": "",
   "BaiduTranslateCacheEnable": false,

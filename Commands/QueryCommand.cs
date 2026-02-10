@@ -3,9 +3,6 @@ using NapCatTmpBot.Services;
 
 namespace NapCatTmpBot.Commands;
 
-/// <summary>
-/// 查询命令
-/// </summary>
 public static class QueryCommand
 {
     private static readonly Dictionary<string, string> UserGroups = new()
@@ -18,9 +15,6 @@ public static class QueryCommand
         {"Game Moderator", "游戏管理员"}
     };
 
-    /// <summary>
-    /// 执行查询命令
-    /// </summary>
     public static async Task<string> Execute(
         CommandContext context,
         PluginConfig config,
@@ -30,14 +24,12 @@ public static class QueryCommand
     {
         long? tmpId = null;
 
-        // 解析参数
         if (!string.IsNullOrWhiteSpace(context.Args) && long.TryParse(context.Args, out var parsedId))
         {
             tmpId = parsedId;
         }
         else
         {
-            // 尝试从绑定获取
             var bind = bindService.GetBind(context.Platform, context.UserId);
             if (bind == null)
             {
@@ -51,7 +43,6 @@ public static class QueryCommand
             return "请输入正确的玩家编号";
         }
 
-        // 查询玩家信息
         var playerResult = await tmpApi.PlayerInfoAsync(tmpId.Value);
         if (playerResult.Code == 10001)
         {
@@ -64,16 +55,14 @@ public static class QueryCommand
 
         var player = playerResult.Data;
 
-        // 查询在线信息
         var mapResult = await tmpApi.PlayerMapInfoAsync(tmpId.Value);
         var mapInfo = mapResult.Code == 200 ? mapResult.Data : null;
 
-        // 构建消息
         var message = new System.Text.StringBuilder();
 
         if (config.QueryShowAvatarEnable && !string.IsNullOrEmpty(player.AvatarUrl))
         {
-            message.AppendLine($"[CQ:image,file={player.AvatarUrl}]");
+            message.AppendLine($"[CQ:image,file={player.AvatarUrl}]\n");
         }
 
         message.AppendLine($"🆔TMP编号: {player.TmpId}");
@@ -164,7 +153,7 @@ public static class QueryCommand
             message.Append("🎁赞助用户");
             if (!player.SponsorHide)
             {
-                message.AppendLine($": \${Math.Floor(player.SponsorAmount / 100)}");
+                message.AppendLine($": $${Math.Floor(player.SponsorAmount / 100)}");
             }
             else
             {
@@ -174,15 +163,12 @@ public static class QueryCommand
 
         if (player.SponsorCumulativeAmount.HasValue)
         {
-            message.AppendLine($"🎁累计赞助: \${Math.Floor(player.SponsorCumulativeAmount.Value / 100)}");
+            message.AppendLine($"🎁累计赞助: $${Math.Floor(player.SponsorCumulativeAmount.Value / 100)}");
         }
 
         return message.ToString();
     }
 
-    /// <summary>
-    /// 格式化里程
-    /// </summary>
     private static string FormatMileage(double meters)
     {
         if (meters > 1000)
@@ -192,9 +178,6 @@ public static class QueryCommand
         return $"{meters}米";
     }
 
-    /// <summary>
-    /// 格式化时间差
-    /// </summary>
     private static string FormatTimeDiff(TimeSpan diff)
     {
         if (diff.TotalDays >= 1)

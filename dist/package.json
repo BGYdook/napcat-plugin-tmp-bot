@@ -1,0 +1,32 @@
+{
+  "name": "napcat-plugin-tmp-bot",
+  "plugin": "TMP查询机器人",
+  "version": "1.7.4",
+  "type": "module",
+  "main": "index.mjs",
+  "description": "欧洲卡车模拟2 TMP查询机器人 - NapCat 原生插件",
+  "author": "BGYdook,晚安（Goodnight_An）",
+  "license": "MIT",
+  "keywords": [
+    "chatbot",
+    "plugin",
+    "truckersmp",
+    "gametool",
+    "ets2",
+    "tmp",
+    "napcat",
+    "onebot11",
+    "qqbot"
+  ],
+  "napcat": {
+    "tags": [
+      "游戏",
+      "工具"
+    ],
+    "minVersion": "4.14.0",
+    "homepage": "https://github.com/BGYdook/napcat-plugin-tmp-bot"
+  },
+  "dependencies": {
+    "dayjs": "^1.11.13"
+  }
+}

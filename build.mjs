@@ -1,37 +1,16 @@
-import { copyFileSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'fs';
-import { dirname, join } from 'path';
+import { readFileSync, copyFileSync, mkdirSync, writeFileSync } from 'fs';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
 
-function copyRecursiveSync(src, dest) {
-  const exists = statSync(src);
-  const isDirectory = exists.isDirectory();
-  if (isDirectory) {
-    mkdirSync(dest, { recursive: true });
-    readdirSync(src).forEach(childItemName => {
-      copyRecursiveSync(join(src, childItemName), join(dest, childItemName));
-    });
-  } else {
-    copyFileSync(src, dest);
-  }
-}
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 try {
   mkdirSync('dist', { recursive: true });
 
-  copyRecursiveSync('src/command', 'dist/command');
-  copyRecursiveSync('src/api', 'dist/api');
-  copyRecursiveSync('src/util', 'dist/util');
-  copyRecursiveSync('src/database', 'dist/database');
-  copyRecursiveSync('TruckersMP-citties-name', 'dist/TruckersMP-citties-name');
-  const resourcePath = 'src/resource';
-  try {
-    copyRecursiveSync(resourcePath, 'dist/resource');
-  } catch (err) {
-    console.log('Resource directory not found, skipping...');
-  }
+  copyFileSync(join(__dirname, 'src/index.mjs'), join(__dirname, 'dist/index.mjs'));
 
-  copyFileSync('src/index.mjs', 'dist/index.mjs');
-
-  const pkg = JSON.parse(readFileSync('package.json', 'utf8'));
+  const pkg = JSON.parse(readFileSync(join(__dirname, 'package.json'), 'utf8'));
   const distPkg = {
     name: pkg.name,
     plugin: pkg.plugin,
@@ -43,9 +22,11 @@ try {
     license: pkg.license,
     keywords: pkg.keywords,
     napcat: pkg.napcat,
-    dependencies: pkg.dependencies
+    dependencies: {
+      'dayjs': '^1.11.13'
+    }
   };
-  writeFileSync('dist/package.json', JSON.stringify(distPkg, null, 2));
+  writeFileSync(join(__dirname, 'dist/package.json'), JSON.stringify(distPkg, null, 2));
 
   console.log('Build complete!');
 } catch (err) {

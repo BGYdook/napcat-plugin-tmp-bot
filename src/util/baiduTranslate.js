@@ -1,4 +1,6 @@
-const md5 = require('js-md5')
+const fetch = require('node-fetch');
+const md5 = require('js-md5');
+const translateCache = require('../database/translateCache');
 
 const USER_GROUP_MAP = {
   'Player': '玩家',
@@ -7,9 +9,8 @@ const USER_GROUP_MAP = {
   'Retired Team Member': '退休团队成员',
   'Add-On Team': '附加组件团队',
   'Game Moderator': '游戏管理员'
-}
+};
 
-// 地方名称修正表（优先级最高）
 const LOCATION_CORRECTIONS = {
   'United Kingdom': '英国',
   'Germany': '德国',
@@ -45,58 +46,48 @@ const LOCATION_CORRECTIONS = {
   'USA': '美国',
   'Canada': '加拿大',
   'Mexico': '墨西哥'
-}
+};
 
-const translateCache = new Map()
-
-/**
- * 百度翻译
- */
 module.exports = async (ctx, cfg, text) => {
-  if (!text) return text
-  text = text.toString().trim()
-  if (!text) return text
+  if (!text) return text;
+  text = text.toString().trim();
+  if (!text) return text;
 
-  // 1. 优先检查修正表
   if (LOCATION_CORRECTIONS[text]) {
-    return LOCATION_CORRECTIONS[text]
+    return LOCATION_CORRECTIONS[text];
   }
 
-  // 2. 检查是否启用百度翻译
   if (!cfg.baiduTranslateEnable || !cfg.baiduTranslateAppId || !cfg.baiduTranslateKey) {
-    return text
+    return text;
   }
 
-  // 3. 检查缓存
   if (cfg.baiduTranslateCacheEnable) {
-    const cacheKey = md5(text)
-    if (translateCache.has(cacheKey)) {
-      return translateCache.get(cacheKey)
-    }
+    const cacheKey = md5(text);
+    const cached = await translateCache.getTranslate(ctx.database, cacheKey);
+    if (cached) return cached;
   }
 
   try {
-    const salt = Date.now().toString()
-    const sign = md5(cfg.baiduTranslateAppId + text + salt + cfg.baiduTranslateKey)
-    
-    const url = `https://fanyi-api.baidu.com/api/trans/vip/translate?q=${encodeURIComponent(text)}&from=auto&to=zh&appid=${cfg.baiduTranslateAppId}&salt=${salt}&sign=${sign}`
-    const result = await ctx.http.get(url)
-    
-    if (result && result.trans_result && result.trans_result.length > 0) {
-      const translated = result.trans_result[0].dst
-      
+    const salt = Date.now().toString();
+    const sign = md5(cfg.baiduTranslateAppId + text + salt + cfg.baiduTranslateKey);
+
+    const url = `https://fanyi-api.baidu.com/api/trans/vip/translate?q=${encodeURIComponent(text)}&from=auto&to=zh&appid=${cfg.baiduTranslateAppId}&salt=${salt}&sign=${sign}`;
+    const result = await fetch(url, { timeout: 10000 });
+    const data = await result.json();
+
+    if (data && data.trans_result && data.trans_result.length > 0) {
+      const translated = data.trans_result[0].dst;
+
       if (cfg.baiduTranslateCacheEnable) {
-        const cacheKey = md5(text)
-        translateCache.set(cacheKey, translated)
+        const cacheKey = md5(text);
+        translateCache.save(ctx.database, cacheKey, text, translated);
       }
-      
-      return translated
+
+      return translated;
     }
-  } catch (e) {
-    // 翻译失败，返回原文
-  }
+  } catch (e) {}
 
-  return text
-}
+  return text;
+};
 
-module.exports.USER_GROUP_MAP = USER_GROUP_MAP
+module.exports.USER_GROUP_MAP = USER_GROUP_MAP;

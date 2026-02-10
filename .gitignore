@@ -1,4 +1,4 @@
-__pycache__/
+__pycache__
 
 lib
 dist
@@ -20,3 +20,6 @@ tsconfig.tsbuildinfo
 *.sln
 
 .claude
+
+config/config.json
+data/*.json

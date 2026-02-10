@@ -1,26 +1,19 @@
-const BASE_API = 'https://tracker.ets2map.com'
+const fetch = require('node-fetch');
+const BASE_API = 'https://tracker.ets2map.com';
 
 module.exports = {
-  /**
-   * 区域查询玩家
-   */
-  async area (http, serverId, x1, y1, x2, y2) {
-    let result = null
+  async area(http, serverId, x1, y1, x2, y2) {
     try {
-      result = await http.get(`${BASE_API}/v3/area?x1=${x1}&y1=${y1}&x2=${x2}&y2=${y2}&server=${serverId}`)
-    } catch {
+      const result = await fetch(`${BASE_API}/v3/area?x1=${x1}&y1=${y1}&x2=${x2}&y2=${y2}&server=${serverId}`, {
+        timeout: 10000
+      });
+      const data = await result.json();
       return {
-        error: true
-      }
+        error: !data || !data.Success,
+        data: data.Data || []
+      };
+    } catch {
+      return { error: true };
     }
-
-    // 拼接返回数据
-    let data = {
-      error: !result || !result.Success
-    }
-    if (!data.error) {
-      data.data = result.Data
-    }
-    return data
   }
 }

@@ -20,8 +20,14 @@ try {
   copyRecursiveSync('src/api', 'dist/api');
   copyRecursiveSync('src/util', 'dist/util');
   copyRecursiveSync('src/database', 'dist/database');
-  copyRecursiveSync('src/TruckersMP-citties-name', 'dist/TruckersMP-citties-name');
-  copyRecursiveSync('src/resource', 'dist/resource');
+  copyRecursiveSync('TruckersMP-citties-name', 'dist/TruckersMP-citties-name');
+  const resourcePath = 'src/resource';
+  try {
+    copyRecursiveSync(resourcePath, 'dist/resource');
+  } catch (err) {
+    console.log('Resource directory not found, skipping...');
+  }
+  writeFileSync('dist/index.mjs', readFileSync('dist/index.js'));
   console.log('Build complete!');
 } catch (err) {
   console.error('Build failed:', err);

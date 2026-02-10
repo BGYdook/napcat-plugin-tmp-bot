@@ -1,24 +1,12 @@
 {
   "name": "napcat-plugin-tmp-bot",
   "plugin": "TMP查询机器人",
-  "description": "欧洲卡车模拟2 TMP查询机器人 - NapCat 原生插件",
   "version": "1.7.4",
-  "main": "dist/index.mjs",
   "type": "module",
+  "main": "index.mjs",
+  "description": "欧洲卡车模拟2 TMP查询机器人 - NapCat 原生插件",
   "author": "BGYdook,晚安（Goodnight_An）",
-  "repository": {
-    "url": "https://github.com/BGYdook/napcat-plugin-tmp-bot"
-  },
-  "homepage": "https://github.com/BGYdook/napcat-plugin-tmp-bot",
-  "files": [
-    "dist",
-    "src"
-  ],
   "license": "MIT",
-  "scripts": {
-    "build": "tsc && node build.mjs",
-    "dev": "tsc --watch"
-  },
   "keywords": [
     "chatbot",
     "plugin",
@@ -30,18 +18,22 @@
     "onebot11",
     "qqbot"
   ],
-  "dependencies": {
-    "dayjs": "^1.11.13",
-    "js-md5": "^0.8.3"
-  },
-  "devDependencies": {
-    "typescript": "^5.0.0",
-    "@types/node": "^20.0.0",
-    "napcat-types": "^4.14.0"
-  },
   "napcat": {
     "tags": ["游戏", "工具"],
     "minVersion": "4.14.0",
     "homepage": "https://github.com/BGYdook/napcat-plugin-tmp-bot"
+  },
+  "dependencies": {
+    "dayjs": "^1.11.13",
+    "js-md5": "^0.8.3",
+    "napcat-types": "0.0.16"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  },
+  "scripts": {
+    "build": "tsc && node build.mjs",
+    "dev": "tsc --watch"
   }
 }

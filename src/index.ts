@@ -1,5 +1,3 @@
-import type { PluginModule, OB11Message, OB11PostSendMsg } from "napcat-types";
-import { EventType } from "napcat-types";
 import * as fs from 'fs/promises';
 import * as path from 'path';
 
@@ -12,11 +10,11 @@ const tmpVersion = require('./command/tmpVersion');
 const tmpDlcMap = require('./command/tmpDlcMap');
 const tmpMileageRanking = require('./command/tmpMileageRanking');
 
-let config = {};
+let config: any = {};
 const BIND_FILE_NAME = 'bind.json';
 const TRANSLATE_CACHE_FILE_NAME = 'translate_cache.json';
 
-export const plugin_init: PluginModule['plugin_init'] = async (ctx) => {
+export const plugin_init = async (ctx) => {
   ctx.logger.log('【TMP查询机器人】插件加载中...');
 
   await initDataDir(ctx);
@@ -25,8 +23,8 @@ export const plugin_init: PluginModule['plugin_init'] = async (ctx) => {
   ctx.logger.log('【TMP查询机器人】插件加载完成');
 };
 
-export const plugin_onmessage: PluginModule['plugin_onmessage'] = async (ctx, event) => {
-  if (event.post_type !== EventType.MESSAGE) return;
+export const plugin_onmessage = async (ctx, event) => {
+  if (event.post_type !== 'message') return;
 
   const message = event.raw_message || event.message;
   const parsed = parseCommand(message);
@@ -51,7 +49,13 @@ export const plugin_onmessage: PluginModule['plugin_onmessage'] = async (ctx, ev
       case '解绑':
         if (config.enableBindFeature !== false) {
           const session = createSession(ctx, event);
-          await removeBindTmpId(ctx, session.platform, session.userId);
+          const fs = require('fs/promises');
+          const path = require('path');
+          const bindFilePath = path.join(ctx.dataPath, BIND_FILE_NAME);
+          const bindData = JSON.parse(await fs.readFile(bindFilePath, 'utf8'));
+          const key = `${session.platform}:${session.userId}`;
+          delete bindData[key];
+          await fs.writeFile(bindFilePath, JSON.stringify(bindData, null, 2));
           result = '解绑成功';
         } else {
           result = '绑定功能已禁用';
@@ -117,16 +121,16 @@ export const plugin_onmessage: PluginModule['plugin_onmessage'] = async (ctx, ev
   }
 };
 
-export const plugin_cleanup: PluginModule['plugin_cleanup'] = (ctx) => {
+export const plugin_cleanup = (ctx) => {
   ctx.logger.log('【TMP查询机器人】插件已卸载');
 };
 
-async function initDataDir(ctx: any) {
+async function initDataDir(ctx) {
   try {
+    await fs.mkdir(ctx.dataPath, { recursive: true });
+
     const bindFilePath = path.join(ctx.dataPath, BIND_FILE_NAME);
     const cacheFilePath = path.join(ctx.dataPath, TRANSLATE_CACHE_FILE_NAME);
-
-    await fs.mkdir(ctx.dataPath, { recursive: true });
 
     const bindExists = await fs.access(bindFilePath).then(() => true).catch(() => false);
     if (!bindExists) {
@@ -142,10 +146,9 @@ async function initDataDir(ctx: any) {
   }
 }
 
-async function loadConfig(ctx: any) {
+async function loadConfig(ctx) {
   try {
-    const configPath = ctx.configPath;
-    const data = await fs.readFile(configPath, 'utf8');
+    const data = await fs.readFile(ctx.configPath, 'utf8');
     config = JSON.parse(data);
 
     if (config.tmpQueryType == null) config.tmpQueryType = 1;
@@ -158,65 +161,7 @@ async function loadConfig(ctx: any) {
   }
 }
 
-async function getBindData(ctx: any) {
-  try {
-    const bindFilePath = path.join(ctx.dataPath, BIND_FILE_NAME);
-    const data = await fs.readFile(bindFilePath, 'utf8');
-    return JSON.parse(data);
-  } catch (err) {
-    return {};
-  }
-}
-
-async function saveBindData(ctx: any, data: any) {
-  try {
-    const bindFilePath = path.join(ctx.dataPath, BIND_FILE_NAME);
-    await fs.writeFile(bindFilePath, JSON.stringify(data, null, 2));
-  } catch (err) {
-    ctx.logger.error('保存绑定数据失败:', err);
-  }
-}
-
-async function getTranslateCache(ctx: any) {
-  try {
-    const cacheFilePath = path.join(ctx.dataPath, TRANSLATE_CACHE_FILE_NAME);
-    const data = await fs.readFile(cacheFilePath, 'utf8');
-    return JSON.parse(data);
-  } catch (err) {
-    return {};
-  }
-}
-
-async function saveTranslateCache(ctx: any, data: any) {
-  try {
-    const cacheFilePath = path.join(ctx.dataPath, TRANSLATE_CACHE_FILE_NAME);
-    await fs.writeFile(cacheFilePath, JSON.stringify(data, null, 2));
-  } catch (err) {
-    ctx.logger.error('保存翻译缓存失败:', err);
-  }
-}
-
-async function getBindTmpId(ctx: any, platform: string, userId: string) {
-  const bindData = await getBindData(ctx);
-  const key = `${platform}:${userId}`;
-  return bindData[key];
-}
-
-async function setBindTmpId(ctx: any, platform: string, userId: string, tmpId: any) {
-  const bindData = await getBindData(ctx);
-  const key = `${platform}:${userId}`;
-  bindData[key] = tmpId;
-  await saveBindData(ctx, bindData);
-}
-
-async function removeBindTmpId(ctx: any, platform: string, userId: string) {
-  const bindData = await getBindData(ctx);
-  const key = `${platform}:${userId}`;
-  delete bindData[key];
-  await saveBindData(ctx, bindData);
-}
-
-function createSession(ctx: any, event: OB11Message) {
+function createSession(ctx, event) {
   return {
     platform: 'qq',
     userId: String(event.user_id),
@@ -225,7 +170,7 @@ function createSession(ctx: any, event: OB11Message) {
   };
 }
 
-function parseCommand(message: string) {
+function parseCommand(message) {
   const cmdMatch = message.match(/^\/(\S+)(?:\s+(.*))?$/);
   if (!cmdMatch) return null;
 
@@ -233,7 +178,7 @@ function parseCommand(message: string) {
   return { cmd, args: args || '' };
 }
 
-function extractArg(args: string, type: string) {
+function extractArg(args, type) {
   if (!args) return null;
   args = args.trim();
 
@@ -247,8 +192,8 @@ function extractArg(args: string, type: string) {
   return args;
 }
 
-async function sendReply(ctx: any, event: OB11Message, message: string) {
-  const params: OB11PostSendMsg = {
+async function sendReply(ctx, event, message) {
+  const params = {
     message: message,
     message_type: event.message_type,
     ...(event.message_type === 'group' && event.group_id
